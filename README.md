@@ -53,7 +53,9 @@ authorize the sample.
 
 ## Run the duplication heuristics
 Group photos which have the same name and date
+
     ruby dump_dups.rb photos.json_list dups > dups.json
 Group photos which have the same name and date and identical dimensions except for rotations
+
     ruby dump_dups.rb photos.json_list rotate > rotates.json
 
