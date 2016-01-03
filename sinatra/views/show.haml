@@ -1,9 +1,15 @@
-- for key, photos in map.to_a
+%div{:style => 'background-color: white; width: 100%; position: fixed'}
+  - if start + slice.length < total
+    %a{:href => "?s=#{start+ slice.length}&p=#{per_page}"}
+      Next
+
+- for key, photos in slice
   %div{:style => 'padding-top: 50px; clear: both'}
-    - for photo in photos.dup.sort_by! {|a| a['modifiedDate'] }
+    - sorted_photos = photos.dup.sort_by! {|a| a['modifiedDate']}
+    - for photo in sorted_photos
       %div{:style => 'float: left'}
         %div{:style => 'padding: 5px 0px 5px 0px'}
           = photo['modifiedDate']
-        %div{:style => 'padding: 5px 0px 5px 0px'}
-          = photo['imageMediaMetadata']
+          = photo['preferred']
+          = "(#{photo['imageMediaMetadata']['width']} x #{photo['imageMediaMetadata']['height']})"
         %img{:src => photo['thumbnailLink']}

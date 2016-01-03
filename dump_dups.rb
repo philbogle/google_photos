@@ -8,7 +8,7 @@ require 'pp'
 
 def main()
   if ARGV.length != 2
-    puts "Usage: ./analyze_dups FILENAME (rotation|dups)"
+    puts "Usage: ./dump_dups FILENAME (rotation|resize|dups)"
     raise "Invalid usage"
   end
 
@@ -29,28 +29,46 @@ def main()
 
   duplicated_photos_map =
     case action
-    when 'rotate'
-      photo_map.select {|key, photos| is_rotation(photos)}
     when 'dups'
       photo_map.select {|key, photos| photos.length > 1}
+    when 'resize'
+      photo_map.select {|key, photos| is_resizing(photos)}
     else
       raise "Unexpected action #{action}"
     end
 
   duplicated_photos_map.each do |key, photos|
+    preferred_photo = nil
     photos.each do |photo|
       id = photo['id']
       # Fix thumbnail link to a permanently valid link.  (The URL generated in the API is only valid for a short time.)
       photo['thumbnailLink'] = "https://drive.google.com/thumbnail?authuser=0&sz=w320&id=#{id}"
 
+      if action == 'resize' && (!preferred_photo || photo_area(preferred_photo) < photo_area(photo))
+        preferred_photo = photo
+      end
       # Delete unininteresting keys
       %w(downloadUrl parents userPermission lastModifyingUser labels selfLink etag owners owenerNamesspaces headRevisionId).each do |key|
         photo.delete(key)
       end
     end
+
+    preferred_photo['preferred'] = true if preferred_photo
   end
 
   jj duplicated_photos_map
+end
+
+def photo_area(photo)
+  photo_width(photo) * photo_height(photo)
+end
+
+def photo_width(photo)
+  photo['imageMediaMetadata']['width']
+end
+
+def photo_height(photo)
+  photo['imageMediaMetadata']['height']
 end
 
 def photo_key(photo)
@@ -60,11 +78,18 @@ def photo_key(photo)
   "#{metadata['date']}:#{filename}"
 end
 
-def is_rotation(photos)
+def is_resizing(photos)
   return false unless photos.length == 2
   p1, p2 = photos
-  return p1['imageMediaMetadata']['width'] == p2['imageMediaMetadata']['height'] &&
-    p2['imageMediaMetadata']['width'] == p2['imageMediaMetadata']['width']
+
+  asp1 = photo_width(p1) / photo_height(p1)
+  asp2 = photo_width(p2) / photo_height(p2)
+
+  approx_equals(asp1, asp2) || approx_equals(asp1, 1.0 / asp2)
+end
+
+def approx_equals(f1, f2, delta = 0.01)
+  return (f1 - f2).abs < delta
 end
 
 main
