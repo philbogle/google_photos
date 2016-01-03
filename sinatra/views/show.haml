@@ -1,0 +1,9 @@
+- for key, photos in map.to_a
+  %div{:style => 'padding-top: 50px; clear: both'}
+    - for photo in photos.dup.sort_by! {|a| a['modifiedDate'] }
+      %div{:style => 'float: left'}
+        %div{:style => 'padding: 5px 0px 5px 0px'}
+          = photo['modifiedDate']
+        %div{:style => 'padding: 5px 0px 5px 0px'}
+          = photo['imageMediaMetadata']
+        %img{:src => photo['thumbnailLink']}

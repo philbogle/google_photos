@@ -23,7 +23,7 @@ def yield_all_photos(client, &block)
         'spaces' => 'photos',
         'maxResults' => 500,
         # Uncomment and edit the following line if you want to restrict the fields dumped.
-        # 'fields' => 'items(title,imageMediaMetadata(date,width,height,cameraModel),fileSize,id,thumbnailLink,downloadUrl,createdDate,version,mimeType,description,labels,originalFilename,fileExtension,md5Checksum,quotaBytesUsed),kind,nextPageToken'
+        # 'fields' => 'items(title,imageMediaMetadata(date,width,height,rotation,cameraModel),fileSize,id,thumbnailLink,downloadUrl,createdDate,modifiedDate,version,description,labels,originalFilename,md5Checksum,quotaBytesUsed,alternateLink),kind,nextPageToken'
       }
       parameters['pageToken'] = page_token if page_token.to_s != ''
       result = client.execute(:api_method => drive.files.list, :parameters => parameters)
