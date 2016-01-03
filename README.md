@@ -1,6 +1,6 @@
 # Google photos utilities
 
-These are some quick and dirty utilities to dump metadata for a user's Google Photos and to scan metadata for potential duplicates. 
+These are some quick and dirty utilities to dump metadata for a user's Google Photos and to scan metadata for potential duplicates.
 There is also a sinatra web app for viewing the potential duplicates.
 
 Follow these instructions to run the utilities.
@@ -55,7 +55,6 @@ authorize the sample.
 Group photos which have the same name and date
 
     ruby dump_dups.rb photos.json_list dups > dups.json
-Group photos which have the same name and date and identical dimensions except for rotations
 
-    ruby dump_dups.rb photos.json_list rotate > rotates.json
-
+Group photos which have the name, date, and aspect ratio (ignoring rotation):
+    ruby dump_dups.rb photos.json_list resize > resizes.json
