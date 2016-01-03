@@ -1,4 +1,4 @@
-# Google photos utility
+# Google photos utilities
 
 These are some quick and dirty utilities to dump metadata for a user's Google Photos and to scan metadata for potential duplicates. 
 There is also a sinatra web app for viewing the potential duplicates.
