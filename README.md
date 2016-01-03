@@ -1,6 +1,9 @@
-# Photos metadata dumper
+# Google photos utility
 
-This is a quick and dirty app to output the metadata for a user's Google Photos to STDOUT.
+These are some quick and dirty utilities to dump metadata for a user's Google Photos and to scan metadata for potential duplicates. 
+There is also a sinatra web app for viewing the potential duplicates.
+
+Follow these instructions to run the utilities.
 
 ## Enable the Drive API
 
