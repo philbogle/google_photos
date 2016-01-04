@@ -52,9 +52,11 @@ authorize the sample.
    redirect it to a file or otherwise maniuplate it.
 
 ## Run the duplication heuristics
-Group photos which have the same name and date
 
-    ruby dump_dups.rb photos.json_list dups > dups.json
-
-Group photos which have the name, date, and aspect ratio (ignoring rotation):
+Group photos which have the name, date, location, camera model, and aspect ratio (ignoring rotation), preferring the photo with the highest resolution.
     ruby dump_dups.rb photos.json_list resize > resizes.json
+
+## Delete the duplicates
+
+    ruby remove_dups.rb resizes.json
+
