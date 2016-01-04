@@ -11,8 +11,8 @@ First, you need to enable the Drive API for your app. You can do this in your
 app's API project in the [Google APIs
 Console](https://code.google.com/apis/console/).
 
-1. Create an API project in the [Google APIs
-   Console](https://code.google.com/apis/console/).
+1. Create an API project in the [Google developers
+   Console](https://console.developers.google.com/project).
 2. Select the **Services** tab in your API project, and enable the Drive API.
 3. Select the **API Access** tab in your API project, and click **Create an
    OAuth 2.0 client ID**.
