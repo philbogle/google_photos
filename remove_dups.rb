@@ -1,11 +1,19 @@
-# Reads the resized duplicates in "resizes.json" and trashes all except the preferred duplicated.
-
+#!/usr/bin/env ruby
+#
+# Reads the duplicates photos in the specified file and trashes all
+# except the preferred version.
 require_relative './drive'
 
 def main
+  if ARGV.length != 1
+    puts "Usage: remove_dups.rb FILENAME.json"
+    raise "Invalid argument"
+  end
+  filename = ARGV.shift
+
   client, drive = Drive.setup('remove_dups', '1.0.0')
 
-  file = File.open('resizes.json')
+  file = File.open(filename)
   puts file
   map = JSON.parse(file.read)
   puts map.size
