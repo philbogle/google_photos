@@ -53,8 +53,18 @@ authorize the sample.
 
 ## Run the duplication heuristics
 
-Group photos which have the name, date, location, camera model, and aspect ratio (ignoring rotation), preferring the photo with the highest resolution.
+Group photos which have the name, date, location, camera model, and aspect ratio (ignoring rotation),
+preferring the photo with the highest resolution.
     ruby dump_dups.rb photos.json_list resize > resizes.json
+
+## View a web page to verify the duplicates are correct
+Start the web server
+     cd sinatra
+     ruby ./server.rb
+
+Go to (e.g.) http://localhost:4567/show/resizes.json and make sure the detected duplicates are valid.  
+Since I have only tried these heuristics against my own collection, it's important that you make
+sure they work on your correctly as well before going on to the next step.
 
 ## Delete the duplicates
 
