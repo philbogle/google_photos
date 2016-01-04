@@ -8,8 +8,8 @@ Follow these instructions to run the utilities.
 ## Enable the Drive API
 
 First, you need to enable the Drive API for your app. You can do this in your
-app's API project in the [Google APIs
-Console](https://code.google.com/apis/console/).
+app's API project in the [Google developers
+   Console](https://console.developers.google.com/project).
 
 1. Create an API project in the [Google developers
    Console](https://console.developers.google.com/project).
