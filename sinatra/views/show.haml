@@ -5,11 +5,11 @@
 
 - for key, photos in slice
   %div{:style => 'padding-top: 50px; clear: both'}
-    - sorted_photos = photos.dup.sort_by! {|a| a['modifiedDate']}
+    %div
+      = key
+    - sorted_photos = photos.dup.sort_by! {|a| a['modifiedByMeDate']}
     - for photo in sorted_photos
       %div{:style => 'float: left'}
         %div{:style => 'padding: 5px 0px 5px 0px'}
-          = photo['modifiedDate']
-          = photo['preferred']
           = "(#{photo['imageMediaMetadata']['width']} x #{photo['imageMediaMetadata']['height']})"
-        %img{:src => photo['thumbnailLink']}
+        %img{:src => photo['thumbnailLink'], :title => photo.to_json}

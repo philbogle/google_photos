@@ -6,10 +6,13 @@ def main
   client, drive = Drive.setup('remove_dups', '1.0.0')
 
   file = File.open('resizes.json')
+  puts file
   map = JSON.parse(file.read)
-
-  count = 0
-  for key, photos in map
+  puts map.size
+  start = 0
+  count = start
+  puts "Handling #{map.size} photos"
+  for key, photos in map.to_a[start..(map.size)]
     preferred = photos.detect {|p| p['preferred'] == true}
     raise "No preferred photo found" unless preferred
     for photo in photos
