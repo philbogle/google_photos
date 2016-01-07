@@ -8,11 +8,11 @@ Follow these instructions to run the utilities.
 ## Enable the Drive API
 
 First, you need to enable the Drive API for your app. You can do this in your
-app's API project in the [Google APIs
-Console](https://code.google.com/apis/console/).
+app's API project in the [Google developers
+   Console](https://console.developers.google.com/project).
 
-1. Create an API project in the [Google APIs
-   Console](https://code.google.com/apis/console/).
+1. Create an API project in the [Google developers
+   Console](https://console.developers.google.com/project).
 2. Select the **Services** tab in your API project, and enable the Drive API.
 3. Select the **API Access** tab in your API project, and click **Create an
    OAuth 2.0 client ID**.
@@ -52,9 +52,21 @@ authorize the sample.
    redirect it to a file or otherwise maniuplate it.
 
 ## Run the duplication heuristics
-Group photos which have the same name and date
 
-    ruby dump_dups.rb photos.json_list dups > dups.json
-
-Group photos which have the name, date, and aspect ratio (ignoring rotation):
+Group photos which have the name, date, location, camera model, and aspect ratio (ignoring rotation),
+preferring the photo with the highest resolution.
     ruby dump_dups.rb photos.json_list resize > resizes.json
+
+## View a web page to verify the duplicates are correct
+Start the web server
+     cd sinatra
+     ruby ./server.rb
+
+Go to (e.g.) http://localhost:4567/show/resizes.json and make sure the detected duplicates are valid.  
+Since I have only tried these heuristics against my own collection, it's important that you make
+sure they work on your correctly as well before going on to the next step.
+
+## Delete the duplicates
+
+    ruby remove_dups.rb resizes.json
+
