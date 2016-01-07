@@ -50,6 +50,10 @@ def main()
       photo['thumbnailLink'] = "https://drive.google.com/thumbnail?authuser=0&sz=w320&id=#{id}"
 
       case mode
+      when 'dups'
+        if (!preferred_photo || photo_area(preferred_photo) < photo_area(photo))
+          preferred_photo = photo
+        end
       when 'resize'
         if (!preferred_photo || photo_area(preferred_photo) < photo_area(photo))
           preferred_photo = photo
@@ -89,10 +93,10 @@ end
 
 def photo_key(photo, mode)
   metadata = photo['imageMediaMetadata']
-  filename = photo['originalFilename']
-  return nil unless filename && metadata && metadata['date']
+  filename = photo['originalFilename'] || photo['title']
+  date = photo['createdDate']
+  return nil unless filename && metadata && date
 
-  date = metadata['date']
   return nil if date == '0000:00:00 00:00:00'
   return nil if mode == 'iphonehdr' && metadata['cameraModel'] !~ /iPhone/
 
@@ -103,9 +107,9 @@ def photo_key(photo, mode)
   filename = filename.gsub(/\s*\([0-9]\)(?=\.jpg)/, '')
   case mode
   when 'iphonehdr'
-    [metadata['date'], metadata['cameraModel'], metadata['location']].join(':')
+    [date, metadata['cameraModel'], metadata['location']].join(':')
   else
-    [metadata['date'], filename, metadata['cameraModel'], metadata['location']].join(':')
+    [date, filename, metadata['cameraModel'], metadata['location'] || ''].join(':')
   end
 end
 
