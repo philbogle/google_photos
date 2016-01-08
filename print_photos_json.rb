@@ -10,49 +10,30 @@ require_relative './drive'
 
 def print_photos_json(client)
   yield_all_photos(client) do |photo|
-    puts photo.to_json
+    puts photo.to_h.to_json
   end
 end
 
 def yield_all_photos(client, &block)
-  drive = client.discovered_api('drive', 'v2')
+  fields = %q(next_page_token,files(name, id, size, image_media_metadata, thumbnail_link, created_time, modified_time, version, md5_checksum, original_filename))
   page_token = nil
   index = 0
-  while true
-    succeeded = false
-    while not succeeded
-      parameters = {
-        'spaces' => 'photos',
-        'maxResults' => 500,
-        # Uncomment and edit the following line if you want to restrict the fields dumped.
-        # 'fields' => 'items(title,imageMediaMetadata(date,width,height,rotation,cameraModel),fileSize,id,thumbnailLink,downloadUrl,createdDate,modifiedDate,version,description,labels,originalFilename,md5Checksum,quotaBytesUsed,alternateLink),kind,nextPageToken'
-      }
-      parameters['pageToken'] = page_token if page_token.to_s != ''
-      result = client.execute(:api_method => drive.files.list, :parameters => parameters)
-      status = result.status
-      if status == 200  # Success
-        succeeded = true
-        photos = result.data
-        photos.items.each do |photo|
-          photo['index'] = index
-          index += 1
-          next if photo['labels'] && (photo['labels']['trashed'] || photo['labels']['hidden'])
-          block.call(photo)
-        end
-        STDERR.puts "Fetched #{photos.items.length} items, total #{index}."
-        page_token = photos.next_page_token
-      elsif status >= 500 && status <= 599  # Transient failure
-        STDERR.puts "An transient error occurred, retrying #{result.data['error']['message']}"
-      else  # Permanent failure
-        raise "A permanent error occurred giving up:  #{result.data['error']['message']}"
-      end
-    end # while not succeeded
-
-    break if page_token.to_s == ''
-  end
+  begin
+    result = client.list_files(q: 'trashed=false',
+                               spaces: 'photos',
+                               fields: fields,
+                               page_size: 1000,
+                               page_token: page_token)
+    result.files.each do |photo|
+      block.call(photo, index)
+      index += 1
+    end
+    STDERR.puts "Fetched #{result.files.length} items, total #{index}."
+    page_token = result.next_page_token
+  end while page_token != nil
 end
 
 if __FILE__ == $0
-  client, drive = Drive.setup('print_photos_json', '1.0.0')
+  client = Drive.setup('print_photos_json', '1.0.0')
   print_photos_json(client)
 end

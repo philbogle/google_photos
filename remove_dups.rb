@@ -11,7 +11,7 @@ def main
   end
   filename = ARGV.shift
 
-  client, drive = Drive.setup('remove_dups', '1.0.0')
+  client = Drive.setup('remove_dups', '1.0.0')
 
   file = File.open(filename)
   puts file
@@ -35,14 +35,11 @@ def main
 end
 
 def trash_file(client, file_id)
-  drive = client.discovered_api('drive', 'v2')
-  result = client.execute(
-    :api_method => drive.files.trash,
-    :parameters => { 'fileId' => file_id })
-  if result.status == 200
-    return result.data
-  else
-    puts "An error occurred: #{result.data['error']['message']}"
+  begin
+    client.update_file(file_id, Google::Apis::DriveV3::File.new(trashed: true))
+  rescue Google::Apis::Error => e
+    puts "An error occurred: #{e.message}"
+    nil
   end
 end
 

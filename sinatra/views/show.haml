@@ -7,9 +7,9 @@
   %div{:style => 'padding-top: 50px; clear: both'}
     %div
       = key
-    - sorted_photos = photos.dup.sort_by! {|a| a['modifiedByMeDate']}
+    - sorted_photos = photos.dup.sort_by! {|a| a['modified_by_me_time']}
     - for photo in sorted_photos
       %div{:style => 'float: left'}
         %div{:style => 'padding: 5px 0px 5px 0px'}
-          = "(#{photo['imageMediaMetadata']['width']} x #{photo['imageMediaMetadata']['height']})"
-        %img{:src => photo['thumbnailLink'], :title => photo.to_json}
+          = "(#{photo['image_media_metadata']['width']} x #{photo['image_media_metadata']['height']})"
+        %img{:src => photo['thumbnail_link'], :title => photo.to_json}
