@@ -5,29 +5,33 @@
 require_relative './drive'
 
 def main
-  if ARGV.length != 1
-    puts "Usage: remove_dups.rb FILENAME.json"
+  if ARGV.length < 1
+    puts "Usage: remove_dups.rb FILENAME.json [START_INDEX]"
     raise "Invalid argument"
   end
   filename = ARGV.shift
 
+  if ARGV.length > 0
+    start = ARGV.shift.to_i
+  else
+    start = 0
+  end
+
   client, drive = Drive.setup('remove_dups', '1.0.0')
 
   file = File.open(filename)
-  puts file
   map = JSON.parse(file.read)
-  puts map.size
-  start = 0
-  count = start
-  puts "Handling #{map.size} photos"
+  index = start
+  puts "Start at #{start} out of #{map.size}"
+  puts "Handling #{map.size - start} photos"
   for key, photos in map.to_a[start..(map.size)]
     preferred = photos.detect {|p| p['preferred'] == true}
     raise "No preferred photo found" unless preferred
     for photo in photos
       if photo != preferred
-        count += 1
+        index += 1
         id = photo['id']
-        puts "#{count}. Trashing #{id}, keeping #{preferred['id']}"
+        puts "#{index}. Trashing #{id}, keeping #{preferred['id']}"
         trash_file(client, id)
       end
     end
