@@ -41,15 +41,10 @@ library, and set up the sample source code, the sample is ready to run.  The
 command-line samples provide a link you'll need to visit in order to
 authorize the sample.
 
-    bundle exec ruby print_photos_json.rb > photos.json_list
+    bundle exec ruby print_photos_json.rb photos.json_list
 
-1. Browse to the provided URL in your web browser to authorize access to your photos.
-2. If you are not already logged into your Google account, you will be prompted
-   to log in.  If you are logged into multiple Google accounts, you will be
-   asked to select one account to use for the authorization.
-3. The application automatically receives the authentication code and resumes
-   operation, outputting the photos metadata as JSON to STDOUT where you can
-   redirect it to a file or otherwise maniuplate it.
+1. Browse to the provided URL in your web browser to authorize access to your photos and enter the specified access code.
+2. The application will then output the photos metadata as a list of JSON lines to the specified file.
 
 ## Run the duplication heuristics
 
