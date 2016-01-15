@@ -22,9 +22,6 @@ def main()
   for line in File.open(filename)
     photo = JSON.parse(line)
 
-    # Skip trashed and hidden photos
-    next if photo['labels'] && (photo['labels']['trashed'] || photo['labels']['hidden'])
-
     key = photo_key(photo, mode)
     next if !key
     (photo_map[key] ||= []) << photo
@@ -47,7 +44,7 @@ def main()
     photos.each do |photo|
       id = photo['id']
       # Fix thumbnail link to a permanently valid link.  (The URL generated in the API is only valid for a short time.)
-      photo['thumbnailLink'] = "https://drive.google.com/thumbnail?authuser=0&sz=w320&id=#{id}"
+      photo['thumbnail_link'] = "https://drive.google.com/thumbnail?authuser=0&sz=w320&id=#{id}"
 
       case mode
       when 'dups'
@@ -59,13 +56,9 @@ def main()
           preferred_photo = photo
         end
       when 'iphonehdr'
-        if (!preferred_photo || (preferred_photo['title'] > photo['title'] && photo_area(preferred_photo) <= photo_area(photo)))
+        if (!preferred_photo || (preferred_photo['name'] > photo['name'] && photo_area(preferred_photo) <= photo_area(photo)))
           preferred_photo = photo
         end
-      end
-      # Delete unininteresting keys
-      %w(downloadUrl parents userPermission lastModifyingUser labels selfLink etag owners owenerNamesspaces headRevisionId).each do |key|
-        photo.delete(key)
       end
     end
 
@@ -84,21 +77,21 @@ def photo_aspect(photo)
 end
 
 def photo_width(photo)
-  photo['imageMediaMetadata']['width']
+  photo['image_media_metadata']['width']
 end
 
 def photo_height(photo)
-  photo['imageMediaMetadata']['height']
+  photo['image_media_metadata']['height']
 end
 
 def photo_key(photo, mode)
-  metadata = photo['imageMediaMetadata']
-  filename = photo['originalFilename'] || photo['title']
-  date = photo['createdDate']
+  metadata = photo['image_media_metadata']
+  filename = photo['original_filename'] || photo['name']
+  date = photo['created_time']
   return nil unless filename && metadata && date
 
   return nil if date == '0000:00:00 00:00:00'
-  return nil if mode == 'iphonehdr' && metadata['cameraModel'] !~ /iPhone/
+  return nil if mode == 'iphonehdr' && metadata['camera_model'] !~ /iPhone/
 
   # Normalize a file name like "foo-001.jpg" to "foo.jpg"
   filename = filename.gsub(/-00[0-9](?=\.jpg)/i, '')
@@ -113,9 +106,9 @@ def photo_key(photo, mode)
 
   case mode
   when 'iphonehdr'
-    [date, metadata['cameraModel'], metadata['location']].join(':')
+    [date, metadata['camera_model'], metadata['location']].join(':')
   else
-    [date, filename, metadata['cameraModel'], metadata['location'] || ''].join(':')
+    [date, filename, metadata['camera_model'], metadata['location'] || ''].join(':')
   end
 end
 

@@ -18,16 +18,15 @@
 # limitations under the License.
 
 require 'rubygems'
-require 'google/api_client'
-require 'google/api_client/client_secrets'
-require 'google/api_client/auth/file_storage'
-require 'google/api_client/auth/installed_app'
+require 'googleauth'
+require 'googleauth/stores/file_token_store'
+require 'google/apis/drive_v3'
+require 'fileutils'
 require 'logger'
 
 module Drive
-  API_VERSION = 'v2'
-  CACHED_API_FILE = "drive-#{API_VERSION}.cache"
-  CREDENTIAL_STORE_FILE = "#{$0}-oauth2.json"
+
+  OOB_URI = 'urn:ietf:wg:oauth:2.0:oob'
 
   # Handles authentication and loading of the API.
   def Drive.setup(application_name, application_version)
@@ -36,48 +35,67 @@ module Drive
     logger = Logger.new(log_file)
     logger.level = Logger::DEBUG
 
-    client = Google::APIClient.new(:application_name => application_name,
-                                   :application_version => application_version)
+    FileUtils.mkdir_p(File.dirname(Drive.token_store_path))
 
-    # FileStorage stores auth credentials in a file, so they survive multiple runs
-    # of the application. This avoids prompting the user for authorization every
-    # time the access token expires, by remembering the refresh token.
-    # Note: FileStorage is not suitable for multi-user applications.
-    file_storage = Google::APIClient::FileStorage.new(CREDENTIAL_STORE_FILE)
-    if file_storage.authorization.nil?
-      client_secrets = Google::APIClient::ClientSecrets.load
-      # The InstalledAppFlow is a helper class to handle the OAuth 2.0 installed
-      # application flow, which ties in with FileStorage to store credentials
-      # between runs.
-
-      scopes = ['https://www.googleapis.com/auth/drive',
-	        'https://www.googleapis.com/auth/drive.metadata',
-	        'https://www.googleapis.com/auth/drive.photos.readonly'];
-
-      flow = Google::APIClient::InstalledAppFlow.new(
-        :client_id => client_secrets.client_id,
-        :client_secret => client_secrets.client_secret,
-        :scope => [scopes]
-      )
-      client.authorization = flow.authorize(file_storage)
-    else
-      client.authorization = file_storage.authorization
-    end
-
-    drive = nil
-    # Load cached discovered API, if it exists. This prevents retrieving the
-    # discovery document on every run, saving a round-trip to API servers.
-    if File.exists? CACHED_API_FILE
-      File.open(CACHED_API_FILE) do |file|
-        drive = Marshal.load(file)
-      end
-    else
-      drive = client.discovered_api('drive', API_VERSION)
-      File.open(CACHED_API_FILE, 'w') do |file|
-        Marshal.dump(drive, file)
-      end
-    end
-
-    return client, drive
+    client = Google::Apis::DriveV3::DriveService.new
+    client.authorization = Drive.user_credentials_for([
+      Google::Apis::DriveV3::AUTH_DRIVE,
+      Google::Apis::DriveV3::AUTH_DRIVE_PHOTOS_READONLY
+    ])
+    client.request_options.retries = 3
+    client
   end
+
+
+  # Returns the path to the client_secrets.json file.
+  def Drive.client_secrets_path
+    return ENV['GOOGLE_CLIENT_SECRETS'] if ENV.has_key?('GOOGLE_CLIENT_SECRETS')
+    return well_known_path_for('client_secrets.json')
+  end
+
+  # Returns the path to the token store.
+  def Drive.token_store_path
+    return ENV['GOOGLE_CREDENTIAL_STORE'] if ENV.has_key?('GOOGLE_CREDENTIAL_STORE')
+    return well_known_path_for('photos-credentials.yaml')
+  end
+
+  # Builds a path to a file in $HOME/.config/google (or %APPDATA%/google,
+  # on Windows)
+  def Drive.well_known_path_for(file)
+    if OS.windows?
+      File.join(ENV['APPDATA'], 'google', file)
+    else
+      File.join(ENV['HOME'], '.config', 'google', file)
+    end
+  end
+
+
+  # Returns user credentials for the given scope. Requests authorization
+  # if requrired.
+  def Drive.user_credentials_for(scope)
+    FileUtils.mkdir_p(File.dirname(token_store_path))
+
+    if ENV['GOOGLE_CLIENT_ID']
+      client_id = Google::Auth::ClientId.new(ENV['GOOGLE_CLIENT_ID'], ENV['GOOGLE_CLIENT_SECRET'])
+    else
+      client_id = Google::Auth::ClientId.from_file(client_secrets_path)
+    end
+    token_store = Google::Auth::Stores::FileTokenStore.new(:file => token_store_path)
+    authorizer = Google::Auth::UserAuthorizer.new(client_id, scope, token_store)
+
+    user_id = 'default'
+
+    credentials = authorizer.get_credentials(user_id)
+    if credentials.nil?
+      url = authorizer.get_authorization_url(base_url: OOB_URI)
+      puts "Open the following URL in your browser and authorize the application."
+      puts url
+      puts "Enter the authorization code:"
+      code = gets
+      credentials = authorizer.get_and_store_credentials_from_code(
+        user_id: user_id, code: code, base_url: OOB_URI)
+    end
+    credentials
+  end
+
 end
