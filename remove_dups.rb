@@ -32,7 +32,11 @@ def main
         index += 1
         id = photo['id']
         puts "#{index}. Trashing #{id}, keeping #{preferred['id']}"
-        trash_file(client, id)
+        begin
+          trash_file(client, id)
+        rescue Exception => e
+            puts "#{e}"
+        end
       end
     end
   end

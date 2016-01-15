@@ -33,7 +33,7 @@ def main()
   duplicated_photos_map =
     case mode
     when 'iphonehdr'
-      photo_map.select {|key, photos| photos.length == 2 && is_resizing(photos)}
+      photo_map.select {|key, photos| photos.length >= 2 && is_resizing(photos)}
     when 'dups'
       photo_map.select {|key, photos| photos.length > 1}
     when 'resize'
@@ -59,7 +59,7 @@ def main()
           preferred_photo = photo
         end
       when 'iphonehdr'
-        if (!preferred_photo || preferred_photo['title'] > photo['title'])
+        if (!preferred_photo || (preferred_photo['title'] > photo['title'] && photo_area(preferred_photo) <= photo_area(photo)))
           preferred_photo = photo
         end
       end
@@ -101,10 +101,16 @@ def photo_key(photo, mode)
   return nil if mode == 'iphonehdr' && metadata['cameraModel'] !~ /iPhone/
 
   # Normalize a file name like "foo-001.jpg" to "foo.jpg"
-  filename = filename.gsub(/-00[0-9](?=\.jpg)/, '')
+  filename = filename.gsub(/-00[0-9](?=\.jpg)/i, '')
 
   # Normalize a file name like "foo (1).jpg" to "foo.jpg"
-  filename = filename.gsub(/\s*\([0-9]\)(?=\.jpg)/, '')
+  filename = filename.gsub(/\s*\([0-9]\)(?=\.jpg)/i, '')
+
+  # Sometimes the location will shift slightly between HDR photos,
+  # so tolerate slight discrepencies.
+  metadata['latitude'] = metadata['latitude'].round(3) if metadata['latitude']
+  metadata['longitude'] = metadata['longitude'].round(3) if metadata['longitude']
+
   case mode
   when 'iphonehdr'
     [date, metadata['cameraModel'], metadata['location']].join(':')
