@@ -3,6 +3,7 @@
 # Reads the duplicates photos in the specified file and trashes all
 # except the preferred version.
 require_relative './drive'
+require 'json'
 
 def main
   if ARGV.length < 1
