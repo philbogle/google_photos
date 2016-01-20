@@ -99,10 +99,18 @@ def photo_key(photo, mode)
   # Normalize a file name like "foo (1).jpg" to "foo.jpg"
   filename = filename.gsub(/\s*\([0-9]\)(?=\.jpg)/i, '')
 
-  # Sometimes the location will shift slightly between HDR photos,
-  # so tolerate slight discrepencies.
-  metadata['latitude'] = metadata['latitude'].round(3) if metadata['latitude']
-  metadata['longitude'] = metadata['longitude'].round(3) if metadata['longitude']
+  if metadata && metadata['location']
+    location = metadata['location']
+    if location['latitude'].to_f == 0.0
+      # Delete invalid locations.
+      metadata.delete('location')
+    else
+      # Sometimes the location will shift slightly between HDR photos,
+      # so tolerate slight discrepencies.
+      location['latitude'] = location['latitude'].round(3)
+      location['longitude'] = location['longitude'].round(3)
+    end
+  end
 
   case mode
   when 'iphonehdr'
